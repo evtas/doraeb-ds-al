@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"sort"
+)
 
 // BubbleSort 冒泡排序
 // 稳定的原地排序，时间复杂度最好是O(n)，最坏是O(n^2)，平均时间复杂度可以通过有序度、无序度进行粗略估计
@@ -131,15 +134,61 @@ func Partition(nums []int, low, high int) int {
 // 条件：很容易划分成m个桶，桶跟桶之间有天然排序，数据在桶内分布均匀
 // 常用于外部排序
 // 每个桶包含一定范围内的数据
+func BucketSort(nums []int) {
+	k := len(nums) / 2
+	buckets := make([][]int, k)
+	for i := 0; i < k; i++ {
+		buckets[i] = make([]int, 0)
+	}
+	for _, num := range nums {
+		buckets[max(num/2-1, 0)] = append(buckets[max(num/2-1, 0)], num)
+	}
+	for _, bucket := range buckets {
+		sort.Slice(bucket, func(i, j int) bool {
+			return bucket[i] < bucket[j]
+		})
+	}
+	index := 0
+	for i := 0; i < k; i++ {
+		for _, num := range buckets[i] {
+			nums[index] = num
+			index++
+		}
+	}
+	return
+}
 
 // 计数排序
 // 桶排序的特殊情况，每个桶内只包含一个值
+func CountingSort(nums []int) {
+	m := 0
+	for _, num := range nums {
+		if num > m {
+			m = num
+		}
+	}
+	counter := make([]int, m+1)
+	for _, num := range nums {
+		counter[num]++
+	}
+	for i := 0; i < m; i++ {
+		counter[i+1] += counter[i]
+	}
+
+	n := len(nums)
+	res := make([]int, n)
+	for i := n - 1; i >= 0; i-- {
+		res[counter[nums[i]]-1] = nums[i]
+		counter[nums[i]]--
+	}
+	copy(nums, res)
+}
 
 // 基数排序
 // 要求数据能划分为高低位，位之间有递进关系，每一位的范围不能太大（因为依赖桶排序）
 
 func main() {
-	nums := []int{6, 3, 2, 1, 4, 2}
-	QuickSort(nums, 0, len(nums)-1)
+	nums := []int{4, 1, 3, 2, 1, 2, 4, 2, 1, 2, 3, 1}
+	CountingSort(nums)
 	fmt.Println(nums)
 }
