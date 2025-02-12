@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"sort"
 )
 
@@ -186,9 +187,50 @@ func CountingSort(nums []int) {
 
 // 基数排序
 // 要求数据能划分为高低位，位之间有递进关系，每一位的范围不能太大（因为依赖桶排序）
+func dight(num, exp int) int {
+	return (num / exp) % 10
+}
+
+func countingSortDigit(nums []int, exp int) {
+	m := 0
+	for _, num := range nums {
+		if num > m {
+			m = num
+		}
+	}
+	counter := make([]int, m+1)
+	for _, num := range nums {
+		d := dight(num, exp)
+		counter[d]++
+	}
+	for i := 0; i < m; i++ {
+		counter[i+1] += counter[i]
+	}
+
+	n := len(nums)
+	res := make([]int, n)
+	for i := n - 1; i >= 0; i-- {
+		d := dight(nums[i], exp)
+		res[counter[d]-1] = nums[i]
+		counter[d]--
+	}
+	copy(nums, res)
+}
+
+func RadixSort(nums []int) {
+	max := math.MinInt
+	for _, num := range nums {
+		if num > max {
+			max = num
+		}
+	}
+	for exp := 1; exp <= max; exp *= 10 {
+		countingSortDigit(nums, exp)
+	}
+}
 
 func main() {
-	nums := []int{4, 1, 3, 2, 1, 2, 4, 2, 1, 2, 3, 1}
-	CountingSort(nums)
+	nums := []int{14, 11, 13, 12, 21, 12, 34, 12, 11, 22, 33, 41}
+	RadixSort(nums)
 	fmt.Println(nums)
 }
